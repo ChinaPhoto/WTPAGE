@@ -1,0 +1,137 @@
+<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content" style="min-height: 500px;">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="certificateName">名称</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                                <!-- @on-sort-change="onSort" -->
+                            <i-Table border stripe :columns="columnData" :data="tableData.dataSource" :height="tableData.tableHeight"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <!-- 新增弹窗 -->
+    <Modal v-model="baseModel.isShow" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>合格证</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" :rules="baseRules" :label-width="120" :model="baseModel">
+                        <Form-Item prop="certificateName" label="合格证名称">
+                            <i-Input  placeholder="合格证名称" v-model="baseModel.certificateName">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item  label="模板上传" prop="FilePath">                     
+                            <Upload :format="['xlsx','xls','doc','docx']" 
+                                :action="uploadUrl" 
+                                :on-success="uploadDone"
+                                :show-upload-list="false"
+                                :on-progress="uploading"
+                                :on-format-error="handleFormatError"
+                                :on-error="handleError"
+                                ref="upLoadDOM"
+                            >
+                                <i-Button  type="info" icon="ios-upload" >文件上传</i-Button>
+                            </Upload>
+                            <span>{{baseModel.filename}}</span>                       
+                        </Form-Item>
+                        <Form-Item label="条形码">
+                            <Checkbox v-model="baseModel.HasBarCode"></Checkbox>
+                        </Form-Item>
+                        <Form-Item prop="NoType" label="选择号段">
+                            <radio-group v-model="baseModel.NoType">
+                                <radio label="0">流水号</radio>
+                                <radio label="1">炉号</radio>
+                            </radio-group>
+                        </Form-Item>
+                    </i-Form>    
+                </i-col>  
+            </Row>
+        </div>
+        <div slot="footer">
+                <i-Button size="large" :loading="loading" @click="cancel(baseModel)">取消</i-Button>
+                <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+            </div>
+    </Modal>
+    <!-- 关联产品弹窗 -->
+    <Modal v-model="related.isShow" width="600px">
+            <p slot="header">
+                <Icon type="information-circled"></Icon>
+                <span>关联产品</span>
+            </p>
+            <div>
+                <Row>
+                    <i-col>
+                        <i-Form  ref="relatedForm" :rules="relatedRules" :label-width="120" :model="related">
+                            <Form-Item  label="产品" prop="productGuid">
+                                <i-Select v-model="related.productGuid" multiple filterable>
+                                    <i-Option v-for= "(item,index) in related.projectData " :key="index" :value="item.value">{{item.label}}</i-Option>
+                                </i-Select>
+                            </Form-Item>
+                            <Form-Item label="包含文件" prop="formTypeIds">
+                                    <!-- @on-change='selectReq ' -->
+                                    <i-Select v-model="related.formTypeIds" multiple>
+                                        <i-Option v-for= "(item,index) in selectData" :key="index" :value="item.id">{{item.name}}</i-Option>
+                                    </i-Select>
+                                </Form-Item>
+                            <Form-Item  label="材料号" prop="materialNo">
+                                    <i-Input  placeholder="请输入" v-model="related.materialNo">
+                                    </i-Input>
+                                </Form-Item>
+                                    <Form-Item  label="接受标准" prop="acceptanceStandard">
+                                    <i-Input  placeholder="请输入" v-model="related.acceptanceStandard">
+                                    </i-Input>
+                                </Form-Item>    
+                                <Form-Item  label="货物描述" prop="itemDescription">
+                                    <i-Input  placeholder="请输入" v-model="related.itemDescription">
+                                    </i-Input>
+                                </Form-Item>
+                                <Form-Item  label="图号" prop= "drawingNo">
+                                    <i-Input  placeholder="请输入" v-model="related.drawingNo">
+                                    </i-Input>
+                                </Form-Item>
+                            </i-Form>    
+                    </i-col>  
+                </Row>
+            </div>
+            <div slot="footer">
+                    <i-Button size="large" :loading="loading" @click="cancel(related)">取消</i-Button>
+                    <i-Button type="primary" size="large" :loading="loading" @click="associationSave">保存</i-Button>
+                </div>
+    </Modal>
+
+</div>
+<script src="/js/business/Certificate.js?1113"></script>

@@ -1,0 +1,136 @@
+<div id="mainDiv" v-cloak>
+        <Spin size="large" fix v-if="loading"></Spin>
+        <Layout>
+            <Content :style="{margin: '20px'}">
+                <Card>
+                    <div id="Content" style="min-height: 500px;">
+                        <Row :gutter="16">
+                            <i-Col span="4">
+                                <i-Select v-model="searchType">
+                                    <i-Option value="reportName">名称</i-Option>
+                                    <i-Option value="productGuid">成品</i-Option>
+                                </i-Select>
+                            </i-Col>
+                            <i-Col span="6">
+                                <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                                </i-Input>
+                            </i-Col>
+    
+                            <i-Col span="2">
+                                <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                            </i-Col>
+                            <i-Col span="2">
+                                <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                            </i-Col>
+                        </Row>
+                        <br>
+                        <Row>
+                            <i-col span="24">
+                                    <!-- @on-sort-change="onSort" -->
+                                <i-Table border stripe :columns="columnData" :data="tableData.dataSource" :height="tableData.tableHeight"></i-Table>
+                            </i-col>
+                        </Row>
+                        <br>
+                        <Row>
+                            <i-col span="24">
+                                <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                            </i-col>
+                        </Row>
+                    </div>
+                </Card>
+            </Content>
+            <Footer class="layout-footer-center"> </Footer>
+        </Layout>
+        <!-- 新增弹窗 -->
+        <Modal v-model="baseModel.isShow" width="600px">
+            <p slot="header">
+                <Icon type="information-circled"></Icon>
+                <span>成品检验</span>
+            </p>
+            <div>
+                <Row>
+                    <i-col>
+                        <i-Form ref="editForm" :rules="baseRules" :label-width="120" :model="baseModel">
+                            <Form-Item prop="reportName" label="检验单名称">
+                                <i-Input  placeholder="请输入" v-model="baseModel.reportName">
+                                </i-Input>
+                            </Form-Item>
+                           
+                            <Form-Item prop="productGuid" label="成品选择" >
+                                <i-Select v-model="baseModel.productGuid" ref="productGuidClear" filterable  :clearable=true :transfer=true>
+                                    <i-Option v-for= "(item,index) in baseModel.projectData " :key="index" :value="item.value">{{item.label}}</i-Option>
+                                </i-Select>
+                            </Form-Item>
+                        </i-Form>    
+                    </i-col>  
+                </Row>
+            </div>
+            <div slot="footer">
+                    <i-Button size="large" :loading="loading" @click="cancel(baseModel)">取消</i-Button>
+                    <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+                </div>
+        </Modal>
+
+        <!-- 子件关联窗口 -->
+        <Modal v-model='componentPop.isShow' width='1300'>
+            <p slot="header">
+                <Icon type="information-circled"></Icon>
+                <span>子件弹窗</span>
+            </p>
+            <!-- :style='modalMaxHeight' -->
+            <div >
+                    <Row :gutter="24">
+                            <i-col span="6">
+                                <div class="left">
+                                    <i-Form :label-width="80" :model='componentPop' ref='componentPop' :rules='componentRules'>
+                                        <Form-Item prop="productGuid" label="子件">
+                                            <i-Select v-model="componentPop.productGuid" filterable :clearable=true  @on-change='getSKU' @on-clear="deleProData" ref="project">
+                                                <i-Option v-for= "(item,index) in componentPop.projectData " :key="index" :value="item.value">{{item.label}}</i-Option>
+                                            </i-Select>
+                                        </Form-Item>
+                                        <form-item label="SKU">
+                                                <!--  @on-clear="deleCopyDataSKU" -->
+                                            <i-select v-model="componentPop.SKU"  filterable  :clearable="true" @on-change="getProcess" @on-clear="deleDataSKU" ref="sku">
+                                                <i-Option v-for="item in componentPop.SKUdata" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                                            </i-select>
+                                        </form-item>
+                                        <Form-Item label="工序">
+                                            <i-Select v-model="componentPop.processGuid" filterable :clearable=true  @on-change="getTableData" @on-clear="delePreData" ref="process">
+                                                <i-Option v-for= "(item,index) in componentPop.processData " :key="index" :value="item.value">{{item.label}}</i-Option>
+                                            </i-Select>
+                                        </Form-Item>
+                                    </i-Form>
+                                 
+                                </div>
+                            </i-col>
+                            <i-col span="9">
+                                <div class="tableTop">
+                                        <p slot="header">
+                                            <Icon type="information-circled"></Icon>
+                                            <span>待选特性值</span>
+                                        </p>
+                                        <!-- :columns="Items.table " border @on-selection-change='ItemsSelect' :data="Items.tableData " -->
+                                    <i-Table ref="selection" border :columns="feature" height='500' :data="featureData"></i-Table>
+                                </div>
+                                
+                            </i-col>
+                            <i-col span="9">
+                                <div class="tableTop">
+                                        <p slot="header">
+                                            <Icon type="information-circled"></Icon>
+                                            <span>已选中的特性值</span>
+                                        </p>
+                                        <!-- :columns="Items.table " border @on-selection-change='ItemsSelect' :data="Items.tableData " -->
+                                        <i-Table ref="selectValue" border :columns="selectFeature" height='500' :data="selectFeatureData"></i-Table>
+                                </div>
+                                
+                            </i-col>
+                    </Row>
+            </div>
+            <div slot="footer">
+                <i-Button size="large" :loading="loading" @click="cancel(componentPop)">取消</i-Button>
+                <i-Button type="primary" size="large" :loading="loading" @click='componentPopSave'>确认</i-Button>
+            </div>
+        </Modal>
+    </div>
+    <script src="/js/business/Producttesting.js?1211"></script>

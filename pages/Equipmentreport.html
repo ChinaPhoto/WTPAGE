@@ -1,0 +1,130 @@
+<div id="mainDiv" v-cloak>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content" :style="styleData">
+                    <div class="form">
+                        <i-Form ref="editForm" :rules="searchverification" :label-width="120" :model="searchData">
+                            <Form-Item label="日期">
+                                <row>
+                                    <i-col span="10">
+                                        <!-- prop="searchData.startData" -->
+                                        <Form-Item prop='startData'>
+                                            <Date-Picker type="date" placeholder="请选择开始日期" v-model="searchData.startData" :transfer=true></Date-Picker>
+                                        </Form-Item>
+                                    </i-col>
+                                    <i-col span="1" style="text-align: center">to</i-col>
+                                    <i-col span="10">
+                                        <!-- prop="searchData.endData" -->
+                                        <Form-Item prop='endData'>
+                                            <Date-Picker type="date" placeholder="请选择结束日期" v-model="searchData.endData" :transfer=true> </Date-Picker>
+                                        </Form-Item>
+                                    </i-col>
+                                </row>
+                            </Form-Item>
+                            <!-- prop="searchData.endData" -->
+                            <Form-Item label="设备">
+                                <row>
+                                    <i-col span="24">
+                                        <i-Select v-model="searchData.eqArray" multiple filterable :transfer=true :style="{width:'100%'}">
+                                            <i-option v-for=" (item,index) in dataSorage.eqData " :key="item.id " :value="item.id ">{{item.name}}</i-option>
+                                        </i-Select>
+                                    </i-col>
+                                </row>
+                            </Form-Item>
+                            <Form-Item label="间隔">
+                                <row>
+                                    <i-col span="24">
+                                        <i-Select v-model='searchData.interval' :transfer=true>
+                                            <i-option v-for="(item,index) in dataSorage.interval " :key="item.id " :value="item.id ">{{item.name}}</i-option>
+                                        </i-Select>
+                                    </i-col>
+                                </row>
+                            </Form-Item>
+                            <Form-Item>
+                                <row>
+                                    <i-col span="20">
+                                        <div> &nbsp;</div>
+                                    </i-col>
+                                    <i-col span="4">
+                                        <i-Button type="primary" @click="search">确认筛选</i-Button>
+                                    </i-col>
+                                </row>
+
+                            </Form-Item>
+                        </i-Form>
+                    </div>
+
+                    <div style='position: relative'>
+                        <h3>设备开机率</h3>
+                        <div id="boot" style="min-width:400px;height:400px">
+                        </div>
+                    </div>
+                    <div style='position: relative;margin-top: 20px'>
+                        <h3>设备停机率</h3>
+                        <div id="shutdown" style="min-width:400px;height:400px">
+                        </div>
+                    </div>
+                </div>
+            </Card>
+        </Content>
+    </Layout>
+</div>
+<style scoped>
+    .form {
+        width: 60%;
+        margin-left: 20%
+    }
+    
+    .ivu-date-picker {
+        width: 100% !important;
+    }
+    
+    h3 {
+        background-color: #ccc;
+    }
+    
+    .DownButton {
+        width: 30px;
+        height: 30px;
+        background-color: #d1d1d1;
+        position: absolute;
+        top: 40px;
+        right: 40px;
+        text-align: center;
+        z-index: 1001
+    }
+    
+    .ivu-icon.icon {
+        font-size: 20px;
+        line-height: 30px;
+    }
+    
+    .prompt {
+        width: 120px;
+        height: 30px;
+        position: absolute;
+        top: 40px;
+        right: -30px;
+        background-color: #e1e1e1;
+        border: 1px solid #d1d1d1;
+        color: 16px;
+        line-height: 30px;
+        text-align: center;
+        display: none;
+    }
+    
+    .DownButton:hover .prompt {
+        display: block;
+    }
+    
+    .ivu-icon-arrow-down-a:before {
+        content: "\f103"
+    }
+</style>
+
+<script src="../node_modules/highcharts/highcharts.js"></script>
+<script src='/js/HchartsPackage/download.js'></script>
+<script src="/js/HchartsPackage/Hmodify.js"></script>
+
+<script src="/js/business/Equipmentreport.js "></script>

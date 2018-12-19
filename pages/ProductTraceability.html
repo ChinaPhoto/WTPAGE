@@ -1,0 +1,87 @@
+<link href="/js/easytable/easytable.css" rel="stylesheet" />
+<link href="/css/business/ProductTraceability.css" rel="stylesheet" />
+<div id="mainDiv">
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content" style="min-height: 500px;">
+                    <Row :gutter="16">
+                        <i-Form inline>
+                            <Form-Item label="成品号">
+                                <i-select v-model="searchMoudle.productNo.activity" filterable :clearable="true">
+                                    <i-Option v-for="item in searchMoudle.productNo.data" :value="item[searchMoudle.productNo.key]" :key="item[searchMoudle.productNo.key]">{{item[searchMoudle.productNo.val]}}</i-Option>
+                                </i-select>
+                            </Form-Item>
+                            <Form-Item label="子件号">
+                                <i-select v-model="searchMoudle.subPartsNo.activity" filterable :clearable="true">
+                                    <i-Option v-for="item in searchMoudle.subPartsNo.data" :value="item[searchMoudle.subPartsNo.key]" :key="item[searchMoudle.subPartsNo.key]">{{item[searchMoudle.subPartsNo.val]}}</i-Option>
+                                </i-select>
+                            </Form-Item>
+                            <Form-Item label="炉号">
+                                <i-select v-model="searchMoudle.batchNo.activity" filterable :clearable="true">
+                                    <i-Option v-for="item in searchMoudle.batchNo.data" :value="item[searchMoudle.batchNo.key]" :key="item[searchMoudle.batchNo.key]">{{item[searchMoudle.batchNo.val]}}</i-Option>
+                                </i-select>
+                            </Form-Item>
+                            <Form-Item label="流水号">
+                                <i-select v-model="searchMoudle.batchId.activity" filterable :clearable="true">
+                                    <i-Option v-for="item in searchMoudle.batchId.data" :value="item[searchMoudle.batchId.key]" :key="item[searchMoudle.batchId.key]">{{item[searchMoudle.batchId.val]}}</i-Option>
+                                </i-select>
+                            </Form-Item>
+                            <Form-Item label="入库日期">
+                                <date-picker type="daterange" split-panels style="width: 200px" v-model="searchMoudle.warehousing"></date-picker>
+                            </Form-Item>
+                            <Form-Item label="  ">
+                                <i-Button type="primary" @click="search(false)" icon="ios-search">搜索</i-Button>
+                            </Form-Item>
+                            <Form-Item label="  ">
+                                <i-Button type="primary" @click="search(true)" icon="ios-search">完整检验过程</i-Button>
+                            </Form-Item>
+                            <Form-Item label="  ">
+                                <i-Button type="primary" v-if="selectedArray.length>0" @click="print">打印</i-Button>
+                            </Form-Item>
+                        </i-Form>
+                    </Row>
+                    <Row>
+                        <i-col span="24" id="aaa">
+                            <!--startprint-->
+                            <i-Table border stripe :columns="searchInfoMoudle.summaryInfo.column" :data="searchInfoMoudle.summaryInfo.data" @on-expand="tableExpand" @on-selection-change="selectedChange"></i-Table>
+                            <!--endprint-->
+                        </i-col>
+                        <div style="width:1024px" id="bbb">
+                        </div>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <Modal v-model="aboutModal" width="950">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>关联炉号</span>
+        </p>
+        <div>
+            <v-table style="width:100%" :title-row-height='48' :row-height='48' is-horizontal-resize :columns="searchInfoMoudle.aboutInfo.column"
+                     :table-data="searchInfoMoudle.aboutInfo.data" :cell-merge="batchNocellMerge"></v-table>
+        </div>
+        <div slot="footer">
+            <i-Button @click="close('aboutModal')">关 闭</i-Button>
+        </div>
+    </Modal>
+    <Modal v-model="showImg" width="500px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>图片查看</span>
+        </p>
+        <div>
+            <img style="width:100%;height:100%" :src="showImgFilepath" />
+        </div>
+        <div slot="footer">
+            <i-Button @click="close('showImg')">关 闭</i-Button>
+        </div>
+    </Modal>
+    <iframe height="0" width="0" frameborder="0" ref="printIframe" name="printIframe" src=""></iframe>
+</div>
+<script src="/js/JsPrint/Jquery.Print.js"></script>
+<script src="/js/business/ProductTraceability.js?r=456"></script>

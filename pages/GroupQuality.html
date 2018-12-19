@@ -1,0 +1,190 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <!--<Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content" style="min-height: 500px;">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="groupId">分组ID</i-Option>
+                                <i-Option value="qualityConditionId">指标条件ID</i-Option>
+                                <i-Option value="qualityId">指标ID</i-Option>
+                                <i-Option value="createTime">创建时间</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <Upload :format="['xls','xlsx']" :on-progress="uploading" :show-upload-list="false" :on-success="uploadDone" :on-format-error="handleFormatError"
+                                    :action="uploadUrl">
+                                <i-Button type="ghost" icon="ios-upload">导入</i-Button>
+                            </Upload>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="info" @click="download" icon="ios-download">导出</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="dataSource"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>-->
+    <layout>
+        <sider breakpoint="md" width="400" :style="{ background: '#f5f7f9',margin: '20px' }">
+            <i-form :model="formItem" :label-width="80">
+                <form-item label="Input">
+                    <i-input v-model="formItem.input" placeholder="Enter something..."></i-input>
+                </form-item>
+                <form-item label="Select">
+                    <i-select v-model="formItem.select">
+                        <i-option value="beijing">New York</i-option>
+                        <i-option value="shanghai">London</i-option>
+                        <i-option value="shenzhen">Sydney</i-option>
+                    </i-select>
+                </form-item>
+                <form-item label="DatePicker">
+                    <row>
+                        <i-col span="11">
+                            <date-picker type="date" placeholder="Select date" v-model="formItem.date"></date-picker>
+                        </i-col>
+                        <i-col span="2" style="text-align: center">-</i-col>
+                        <i-col span="11">
+                            <time-picker type="time" placeholder="Select time" v-model="formItem.time"></time-picker>
+                        </i-col>
+                    </row>
+                </form-item>
+                <form-item label="Radio">
+                    <radio-group v-model="formItem.radio">
+                        <radio label="male">Male</radio>
+                        <radio label="female">Female</radio>
+                    </radio-group>
+                </form-item>
+                <form-item label="Checkbox">
+                    <checkbox-group v-model="formItem.checkbox">
+                        <checkbox label="Eat"></checkbox>
+                        <checkbox label="Sleep"></checkbox>
+                        <checkbox label="Run"></checkbox>
+                        <checkbox label="Movie"></checkbox>
+                    </checkbox-group>
+                </form-item>
+                <form-item label="Switch">
+                    <i-switch v-model="formItem.switch" size="large">
+                        <span slot="open">On</span>
+                        <span slot="close">Off</span>
+                    </i-switch>
+                </form-item>
+                <form-item label="Slider">
+                    <slider v-model="formItem.slider" range></slider>
+                </form-item>
+                <form-item label="Text">
+                    <i-input v-model="formItem.textarea" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="Enter something..."></i-input>
+                </form-item>
+                <form-item>
+                    <i-button type="primary">Submit</i-button>
+                    <i-button type="ghost" style="margin-left: 8px">Cancel</i-button>
+                </form-item>
+            </i-form>
+        </sider>
+        <layout :style="{margin: '20px'}">
+            <i-content style="min-height: 500px;">
+                <Card>
+                    <div id="Content" style="min-height: 500px;">
+                        <Row :gutter="16">
+                            <i-Col span="4">
+                                <i-Select v-model="searchType">
+                                    <i-Option value="groupId">分组ID</i-Option>
+                                    <i-Option value="qualityConditionId">指标条件ID</i-Option>
+                                    <i-Option value="qualityId">指标ID</i-Option>
+                                    <i-Option value="createTime">创建时间</i-Option>
+                                </i-Select>
+                            </i-Col>
+                            <i-Col span="6">
+                                <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                                </i-Input>
+                            </i-Col>
+
+                            <i-Col span="2">
+                                <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                            </i-Col>
+                            <i-Col span="2">
+                                <Upload :format="['xls','xlsx']" :on-progress="uploading" :show-upload-list="false" :on-success="uploadDone" :on-format-error="handleFormatError" :action="uploadUrl">
+                                    <i-Button type="ghost" icon="ios-upload">导入</i-Button>
+                                </Upload>
+                            </i-Col>
+                            <i-Col span="2">
+                                <i-Button type="info" @click="download" icon="ios-download">导出</i-Button>
+                            </i-Col>
+                            <i-Col span="2">
+                                <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                            </i-Col>
+                        </Row>
+                        <br>
+                        <Row>
+                            <i-col span="24">
+                                <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="dataSource"></i-Table>
+                            </i-col>
+                        </Row>
+                        <br>
+                        <Row>
+                            <i-col span="24">
+                                <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                            </i-col>
+                        </Row>
+                    </div>
+                </Card>
+            </i-content>
+        </layout>
+    </layout>
+    <Modal v-model="showEdit" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>编辑</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" inline :rules="baseRules" :model="baseModel">
+                        <Form-Item prop="groupId" label="分组ID">
+                            <i-Input size="small" v-model="baseModel.groupId" placeholder="分组ID"></i-Input>
+                        </Form-Item>
+                        <Form-Item prop="qualityConditionId" label="指标条件ID">
+                            <i-Input size="small" v-model="baseModel.qualityConditionId" placeholder="指标条件ID"></i-Input>
+                        </Form-Item>
+                        <Form-Item prop="qualityId" label="指标ID">
+                            <i-Input size="small" v-model="baseModel.qualityId" placeholder="指标ID"></i-Input>
+                        </Form-Item>
+                        <Form-Item prop="createTime" label="创建时间">
+                            <Date-Picker size="small" style="width:160px" type="date" v-model="baseModel.createTime" placeholder="创建时间"></Date-Picker>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button type="primary" size="large" :loading="loading" long @click="save">保存</i-Button>
+        </div>
+    </Modal>
+</div>
+<script src="/js/lib/GroupQuality.js"></script>

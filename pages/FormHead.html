@@ -1,0 +1,77 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="content">产品检验单表头</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="tableData.dataSource" :height="tableData.tableHeight"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model="showEdit" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>产品检验单表头管理</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" inline :rules="baseRules" :model="baseModel">
+
+                        <!--  -->
+                        <Form-Item label="产品检验单表头" prop="content">
+                            <i-Input type="text" v-model="baseModel.content" style="width:300px" placeholder="检验单表头">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="FileId" label="上传图片">
+                            <Upload :format="['bmp','jpg','png','svg','gif']" :on-progress="uploading" :show-upload-list="false" :on-success="uploadDone" :on-format-error="handleFormatError" :action="uploadUrl">
+                                <i-Button type="info" icon="ios-upload">上传图片</i-Button>
+                            </Upload>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+
+
+
+</div>
+<script src="/js/lib/FormHead.js"></script>
+<!-- <script src="/js/business/FormHead.js?R=61211"></script> -->

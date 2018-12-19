@@ -1,0 +1,100 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content" style="min-height: 500px;">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="groupName">组名</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="tableData.dataSource" :height="tableData.tableHeight"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <Modal v-model="showEdit.isShow" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>工序检验项分组</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" inline :rules="baseRules" :model="baseModel">
+                        <Form-Item prop="groupName" label="分组名称">
+                            <i-Input type="text" size="small" v-model="baseModel.groupName" placeholder="分组名称">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="sort" label="排序号">
+                            <i-Input size="small" v-model="baseModel.sort" placeholder="排序号"></i-Input>
+                        </Form-Item>
+
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(showEdit)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+    <Modal v-model='indexModel.isShow' width='600' :mask-closable="false">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>工序检测项</span>
+        </p>
+        <div>
+            <i-Table :columns="indexModel.table" border :data="indexModel.tableData" height='350'></i-Table>
+            <div style="padding: 10px 0">
+                <i-col span="24">
+                    <Page :total="indexModel.total" @on-change="indexChangePage" :page-size="indexModel.pageSize" size="small" show-total></Page>
+                </i-col>
+            </div>
+        </div>
+        <div slot="footer">
+            <i-Button type="success" size="large" icon='ios-bolt' :loading="loading" @click='bindData'>绑定工序检测项</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click='cancel(indexModel)'>关闭</i-Button>
+        </div>
+    </Modal>
+    <Modal v-model='bindIndexModel.isShow' width='600' :mask-closable="false">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>绑定指标</span>
+        </p>
+        <div :style="modalMaxHeight">
+            <Tree :data="bindIndexModel.treeData" :load-data="loadData" @on-check-change='treeSelect' show-checkbox></Tree>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(bindIndexModel)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click='bingIndex'>确认</i-Button>
+        </div>
+    </Modal>
+</div>
+<script src="/js/lib/Group.js?r=11"></script>

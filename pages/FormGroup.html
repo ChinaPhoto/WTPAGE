@@ -1,0 +1,279 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType" @on-change='clearSearchKey'>
+                                <i-Option value="title">产品检验单名称</i-Option>
+                                <i-Option value="ProductCode">产品</i-Option>
+                                <i-Option value="formType">产品检验单类型</i-Option>
+                                <i-Option value="remark">备注</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <div v-if="searchType != 'formType'">
+                                <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                                </i-Input>
+                            </div>
+                            <div v-else>
+                                <i-Select v-model="searchKey" clearable @on-clear='clearSearchKey'>
+                                    <i-Option v-for="item in baseModelOption" :key="item.id" :value="item.id">{{item.name}}</i-Option>
+                                </i-Select>
+                            </div>
+
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="formGroupTableData.dataSource" :height="formGroupTableData.tableHeight"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model="showEdit.isShow" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>产品检验单</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" :rules="baseRules" :label-width="120" :model="baseModel">
+                        <Form-Item prop="Title" label="检验单名称">
+                            <i-Input type="text" v-model="baseModel.Title" placeholder="检验单名称">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="产品" prop='productValue'>
+                            <Auto-Complete v-model="baseModel.productValue" placeholder="选择" :filter-method="filterMethod" @on-change='completeReq' @on-select='projectGuidReq'>
+                                <i-Option v-for="item in autoCompleteData.data" :value="item.Name+'-'+ item.ProductCode" :key="item.ProductGuid">{{item.Name}}-{{item.ProductCode}}</i-Option>
+                            </Auto-Complete>
+                        </Form-Item>
+                        <Form-Item prop="formType" label="检验单类型">
+                            <i-Select v-model="baseModel.formType" style="width: 200px" :transfer='true'>
+                                <i-Option v-for='item in baseModelOption' :key="item.id" :value="item.id">{{item.name}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+                        <Form-Item prop="StartTime" label="生效时间">
+                            <Date-Picker type="date" v-model="baseModel.StartTime" placeholder="开始时间"></Date-Picker>
+                        </Form-Item>
+                        <Form-Item prop="EndTime" label="结束时间">
+                            <Date-Picker type="date" v-model="baseModel.EndTime" placeholder="开始时间"></Date-Picker>
+                        </Form-Item>
+                        <Form-Item prop="isStart" label="是否启用">
+                            <radio-group v-model="baseModel.isStart">
+                                <radio label="0">否</radio>
+                                <radio label="1">是</radio>
+                            </radio-group>
+                        </Form-Item>
+                        <Form-Item prop="Remark" label="备注">
+                            <i-Input type="textarea" size="large" style="width:400px" v-model="baseModel.Remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(showEdit)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+
+    <!-- 绑定表单头 -->
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model="bindingFormHead.isShow" width="810">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>绑定检验单表头</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <Transfer :data="sourceFormHead" :target-keys="targetFormHead" :list-style="listStyle" :titles="transferTitles" :render-format="render3" filterable :filter-method="filterMethod" @on-change="handleChange2" ref='bindingFormHead'></Transfer>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(bindingFormHead)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="showEditFormHead">编辑检验单表头</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="saveSelectFormHead">保存</i-Button>
+        </div>
+    </Modal>
+    <!-- 编辑表单头 -->
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model="editFormHead.isShow" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>表单头编辑</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <Row>
+                <i-col>
+                    <i-Form ref="editFormFormHead">
+                        <Form-Item v-for="(item, index) in inputData" :key="index" :label="item.label" prop="remark" style="position:relative">
+                            <i-Input type="text" v-model="item.value">
+                            </i-Input>
+                            <Upload ref="upload" :show-upload-list="false" :format="['jpg','jpeg','png','bpm','svg','gif']" :max-size="2048" type="drag" style="position:absolute ; top:4px; right:470px;width: 20px;height:20px" :before-upload='beforeUpload' :on-success="handleSuccess"
+                                :on-error="handleError" :on-format-error="handleFormatError" :on-exceeded-size="handleMaxSize" :action="uploadUrl">
+                                <div style="width: 20px;height:20px;line-height: 20px;" @click='bindId(item.key)'>
+                                    <icon type="camera" size="20"></icon>
+                                </div>
+                                <!-- width: 20px;height:20px;line-height: 20px; -->
+                                <!-- <Tooltip content="点我上传图片" placement="top" style="float:left;  width: 20px;height:20px">
+                                    <Icon type="camera" size="20"></Icon>
+                                </Tooltip> -->
+                            </Upload>
+                            <div class="Imgtop" v-if="item.fileId" @click='imgShow(item.key)'>
+                                <Icon type="images" size="20"></Icon>
+                            </div>
+                            <!-- <Tooltip content="点我查看上传图片" placement="bottom" class="Imgtop">
+                                <Button class="button" @click='imgShow()'> <Icon type="images" size="20"></Icon></Button >                             
+                            </Tooltip> -->
+
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(editFormHead)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="saveFormHead">保存</i-Button>
+        </div>
+    </Modal>
+    <!-- 绑定表单 -->
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model='Items.isShow' width='600'>
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>绑定工序检验单</span>
+        </p>
+        <div>
+            <i-Table :columns="Items.table" border ref="selection" @on-selection-change='ItemsSelect' :data="Items.tableData" height='400'></i-Table>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(Items)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click='ItemsConfirm'>确认</i-Button>
+        </div>
+    </Modal>
+    <!-- :mask-closable="false" :closable='false' -->
+    <!-- 预览窗口 -->
+    <Modal v-model='preview.isShow' width='800'>
+        <p slot="header" style='text-align: center'>
+            <span>{{preview.formHead}}</span>
+        </p>
+        <div>
+            <div>
+                <i-Form :model='preview.form' inline :label-width="100">
+                    <Form-Item v-for="(item, index) in preview.inputData" :key="index" :label="item.Content + '：'">
+                        <p style="width: 250px">{{item.Value}}</p>
+                    </Form-Item>
+                </i-Form>
+            </div>
+            <div>
+                <i-Table :columns="preview.table" border :data="preview.tableData" height='400'></i-Table>
+            </div>
+        </div>
+
+        <div slot="footer">
+            <i-Button type="primary" size="large" :loading="loading" @click='previewShow()'>关闭</i-Button>
+        </div>
+    </Modal>
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model='img.imgBigShow' width='800' class="">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>图片预览</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <img :src="imgBig()" v-if='img.ImgFileId' alt="" :style="img.css">
+        </div>
+        <div slot="footer">
+            <i-Button type="primary" size="large" :loading="loading" @click='imgPreviewShows()'>关闭</i-Button>
+        </div>
+    </Modal>
+    <!-- 复制弹窗 -->
+    <Modal v-model='copyModal.isShow' width='600'>
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>产品检验单复制框</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <Row>
+                <i-col>
+                    <i-Form ref="copyForm" :rules="copyRules" :label-width="120" :model="copyModal">
+                        <Form-Item prop="formTitle" label="检验单名称">
+                            <i-Input type="text" v-model="copyModal.formTitle" placeholder="表单名称">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="表单类型">
+                            <i-Input type="text" disabled v-model="copyModal.formTypeValue">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="产品" prop='CompletionValue'>
+                            <Auto-Complete v-model="copyModal.CompletionValue" :filter-method="filterMethod" @on-change='completeReqCopy' placeholder="选择产品" @on-select='skuReq'>
+                                <i-Option v-for="item in copyModal.CP.data" :value="item.Name +'-'+ item.ProductCode" :key="item.ProductGuid">{{item.Name}}-{{item. ProductCode}}</i-Option>
+                            </Auto-Complete>
+                        </Form-Item>
+                        <Form-Item label="SKU">
+                            <i-Select v-model='copyModal.selectValue' @on-change='selectReq' :clearable="true" @on-clear='selectSKUReq' :transfer='true'>
+                                <i-Option v-for="(item,index) in copyModal.SKU.data" :key="index" :value='item.SQUGuid'>{{item.SQUName}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+
+                        <Form-Item label="工序">
+                            <i-Select v-model='copyModal.processValue' @on-change='copyProcess' :clearable="true" :transfer='true'>
+                                <i-Option v-for="(item,index) in copyModal.GX.data" :key="index" :value='item.ProcessGuid'>{{item.ProcessName}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+                        <Form-Item prop="remark" label="备注">
+                            <i-Input type="textarea" size="large" v-model="copyModal.remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(copyModal)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click='copySave'>保存</i-Button>
+        </div>
+    </Modal>
+</div>
+<!-- <script src="/js/business/FormGroup.js?R=11111"></script> -->
+<script src="/js/lib/FormGroup.js?19111"></script>
+<style>
+    .button {
+        background: none;
+        border: 0
+    }
+    
+    .Imgtop {
+        position: absolute;
+        top: 5px;
+        right: 430px;
+        width: 22px;
+        height: 21px;
+        line-height: 20px;
+        border: 1px dashed #ddd;
+        text-align: center;
+        border-radius: 3px;
+    }
+</style>

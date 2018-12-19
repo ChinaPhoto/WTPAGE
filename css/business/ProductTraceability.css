@@ -1,0 +1,34 @@
+.expand-row {
+    margin-bottom: 16px;
+}
+
+.ivu-table th,
+.ivu-table td {
+    border-bottom: 0px !important;
+}
+
+.ivu-collapse {
+    border: 0px !important;
+}
+
+.vertical-border {
+    border-right-width: 0px !important;
+}
+
+ 
+.v-table-rightview .v-table-body td>div {
+
+   background-color: white !important;
+   border: 1px solid #e9eaec;
+}
+.v-table-rightview .v-table-htable td>div {
+
+    background-color: white !important;
+    border: 1px solid #e9eaec;
+ }
+ .v-table-rightview .v-table-btable td>div {
+
+    background-color: white !important;
+    border: 1px solid #e9eaec;
+ }
+ 

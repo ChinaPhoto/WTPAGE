@@ -1,0 +1,91 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content" style="min-height: 500px;">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="quality">指标名</i-Option>
+                                <i-Option value="tag">备注名</i-Option>
+                                <i-Option value="remark">备注</i-Option>
+                                <i-Option value="imgFileId">文件ID</i-Option>
+                                <i-Option value="createTime">创建时间</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <Upload :format="['xls','xlsx']" :on-progress="uploading" :show-upload-list="false" :on-success="uploadDone" :on-format-error="handleFormatError" :action="uploadUrl">
+                                <i-Button type="ghost" icon="ios-upload">导入</i-Button>
+                            </Upload>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="info" @click="download" icon="ios-download">导出</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="dataSource"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <Modal v-model="showEdit" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>指标表编辑</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" inline :rules="baseRules" :model="baseModel">
+                        <Form-Item prop="quality" label="指标名">
+                            <i-Input type="text" size="small" v-model="baseModel.quality" placeholder="指标名">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="tag" label="备注名">
+                            <i-Input type="text" size="small" v-model="baseModel.tag" placeholder="备注名">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="remark" label="备注">
+                            <i-Input type="text" size="small" v-model="baseModel.remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="imgFileId" label="文件ID">
+                            <i-Input type="text" size="small" v-model="baseModel.imgFileId" placeholder="文件ID">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="createTime" label="创建时间">
+                            <Date-Picker size="small" style="width:160px" type="date" v-model="baseModel.createTime" placeholder="创建时间"></Date-Picker>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button type="primary" size="large" :loading="loading" long @click="save">保存</i-Button>
+        </div>
+    </Modal>
+</div>
+<script src="/js/lib/Quality.js"></script>

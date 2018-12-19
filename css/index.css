@@ -1,0 +1,66 @@
+.layout {
+    border: 1px solid #d7dde4;
+    background: #f5f7f9;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.layout-logo {
+    width: 145px;
+    height: 57px;
+    /* background: #5b6270; */
+    border-radius: 3px;
+    float: left;
+    position: relative;
+    top: 10px;
+    left: -33px;
+}
+
+.layout-nav {
+    float: right;
+    margin-right: 20px;
+}
+
+.layout-footer-center {
+    text-align: center;
+}
+
+
+/*logo样式*/
+
+.logoImg {
+    width: 100%;
+    height: auto;
+}
+
+.ivu-select-dropdown.ivu-auto-complete {
+    max-height: 300px;
+}
+
+
+/*清除浮动*/
+
+.clearfix:before,
+.clearfix:after {
+    content: "";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.clearfix {
+    *zoom: 1;
+    /*IE/7/6*/
+}
+
+.ivu-table-cell {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+[v-cloak] {
+    display: none;
+}

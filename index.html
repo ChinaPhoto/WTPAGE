@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>检验单模块</title>
+    <script src='./node_modules/babel-polyfill/dist/polyfill.min.js'></script>
+    <link rel="stylesheet" href="./node_modules/iview/dist/styles/iview.css">
+    <link rel="stylesheet" href="./css/index.css">
+    <script src="./node_modules/vue/dist/vue.js"></script>
+    <script src="js/iview.js"></script>
+    <!-- 引入easy table 组件库 -->
+    <script src="js/easytable/easytable.js"></script>
+    <script src="./node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="./node_modules/axios/dist/axios.min.js"></script>
+    <!-- 拖放排序插件 -->
+    <script src="./node_modules/sortablejs/Sortable.min.js"></script>
+    <script src="./js/baseES5.js"></script>
+    <script src="./js/main.js"></script>
+</head>
+
+<body>
+    <div id="apps" v-cloak>
+        <div class="layout">
+            <Layout>
+                <i-Header>
+                    <i-menu mode="horizontal" theme="dark" active-name="1">
+                        <div class="layout-logo">
+                            <img src="./image/logo-c.png" alt="" class="logoImg">
+                        </div>
+                        <div class="layout-nav clearfix">
+                            <Dropdown trigger="click" style="margin:0 20px" v-for="(item, index) in products" :key="index" @on-click='collapsedSider'>
+                                <a href="javascript:void(0)">
+                                    {{item.menuName}}
+                                    <Icon type="arrow-down-b"></Icon>
+                                </a>
+                                <Dropdown-Menu slot="list">
+                                    <Dropdown-Item v-for='(val,num) in item.children' :key="num" :name='val.url'>{{val.menuName}}</Dropdown-Item>
+                                </Dropdown-Menu>
+                            </Dropdown>
+                        </div>
+                    </i-menu>
+                </i-Header>
+                <i-content :style="{padding: '24px', paddingBottom:'0px', background: '#eee' }" ref="content">
+                    <Breadcrumb>
+                        <Breadcrumb-Item v-for="(item,index) in current" :key="index">{{item.name}}</Breadcrumb-Item>
+                    </Breadcrumb>
+                    <!-- :style="conHeight" -->
+                    <div ref="loadHtml">
+                    </div>
+                </i-content>
+            </Layout>
+        </div>
+    </div>
+    <input type="hidden" id="LoadParam" value="" />
+    <script src="./js/indexES5.js?2"></script>
+</body>
+
+</html>

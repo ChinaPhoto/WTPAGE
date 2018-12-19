@@ -1,0 +1,71 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="batchNo">炉号</i-Option>
+                                <i-Option value="productName">产品</i-Option>
+                                <i-Option value="userName">检验员</i-Option>
+                                <i-Option value="taskNo">任务号</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="tableData.dataSource" :height="tableData.tableHeight"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <Modal v-model="showEdit" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>任务表编辑</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" :rules="baseRules" :model="baseModel">
+                        <Form-Item prop="FileId" label="上传文件">
+                            <Upload :format="['pdf']" :before-upload="beforeUpload" :on-progress="uploading" :show-upload-list="false" :on-success="uploadDone" :on-format-error="handleFormatError" :action="uploadUrl">
+                                <i-Button :disabled="!downFile" type="info" icon="ios-upload">导入三坐标文件</i-Button>
+                            </Upload>
+                        </Form-Item>
+                        <Form-Item prop="remark" label="备注">
+                            <i-Input type="textarea" :disabled="!downFile" size="large" style="width:400px" v-model="baseModel.remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <!-- @click="cancel(copyModal)" -->
+            <i-Button size="large" :loading="loading" @click="cancel">取消</i-Button>
+            <i-Button type="primary" size="large" :disabled="!downFile" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+</div>
+<script src="/js/lib/CMM.js?211"></script>

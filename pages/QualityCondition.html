@@ -1,0 +1,273 @@
+﻿<style>
+    .ivu-checkbox-wrapper{
+        margin-right: 0px !important;
+    }
+</style>
+<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <layout>
+        <sider breakpoint="md" width="260" class="left" :style="{ background: '#f5f7f9',margin: '15px' ,position:'inherit !important'}">
+            <i-form :model="selectItem" :label-width="40">
+                <form-item label="产品">
+                    <i-Select v-model="selectItem.m_select_Product" filterable ref="s_product" :clearable="true">
+                        <i-Option v-for="item in selectItem.m_data_Product" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                    </i-Select>
+                </form-item>
+                <form-item label="SKU">
+                    <i-select v-model="selectItem.m_select_SKU" :disabled="selectItem.m_select_Product==''" filterable ref="s_sku" :clearable="true">
+                        <i-Option v-for="item in selectItem.m_data_SKU" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                    </i-select>
+                </form-item>
+                <form-item label="工序">
+                    <i-select v-model="selectItem.m_select_Process" :disabled="selectItem.m_select_SKU==''" filterable ref="s_process" :clearable="true">
+                        <i-Option v-for="item in selectItem.m_data_Process" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                    </i-select>
+                </form-item>
+                <!-- <form-item label="设备">
+                    <i-select v-model="selectItem.m_select_Equipment" filterable ref="s_equipment" :clearable="true">
+                        <i-Option v-for="item in selectItem.m_data_Equipment" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                    </i-select>
+                </form-item> -->
+            </i-form>
+        </sider>
+        <layout>
+            <!-- style="min-height: 500px;" -->
+            <i-content>
+                <Card>
+                    <!-- style="min-height: 500px;" -->
+                    <div id="Content">
+                        <Row :gutter="16">
+                            <i-Col span="4">
+                                <i-Select v-model="searchType" placeholder="请选择搜索条件" @on-change="conditionChange">
+                                    <i-Option value="Quality">检测项名称</i-Option>
+                                    <i-Option value="QualityType">检测项类型</i-Option>
+                                    <i-Option value="Time">用时</i-Option>
+                                    <i-Option value="roleValue">角色</i-Option>
+                                </i-Select>
+                            </i-Col>
+                            <i-Col span="6">
+                                <i-Input type="text" v-model="searchKey" v-if="searchType=='Quality'||searchType=='Time'" placeholder="请输入关键字">
+                                </i-Input>
+                                <i-Select v-model='searchKey' v-if="searchType=='QualityType'" filterable :clearable="true" placeholder="请选择检测项类型">
+                                    <i-Option v-for="item in Indicator.data" :key="item.id" :value='item.id'>{{item.name}}</i-Option>
+                                </i-Select>
+                                <i-Select v-model="searchKey" v-if="searchType=='roleValue'" filterable :clearable="true" placeholder="请选择角色">
+                                    <i-Option value="1">操作员</i-Option>
+                                    <i-Option value="2">检验员</i-Option>
+                                </i-Select>
+                            </i-Col>
+
+                            <i-Col span="2">
+                                <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                            </i-Col>
+                            <i-Col span="2">
+                                <i-Button type="success" @click="add" icon="plus"  :disabled="!selectItem.m_select_Product">
+                                    新增
+                                </i-Button>
+                            </i-Col>
+                            <i-Col span="2">
+                                <i-Button type="warning" @click="copy" icon="ios-copy-outline" :disabled="!selectItem.m_select_Product">
+                                    复制
+                                </i-Button>
+                            </i-Col>
+                        </Row>
+                        <br>
+                        <Row>
+                            <i-col span="24">
+                                <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="formTableData.dataSource" :height='formTableData.tableHeight' @on-selection-change="selectionData"></i-Table>
+                            </i-col>
+                        </Row>
+                        <br>
+                        <Row>
+                            <i-col span="24">
+                                <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                            </i-col>
+                        </Row>
+                    </div>
+                </Card>
+            </i-content>
+        </layout>
+    </layout>
+    <Modal v-model="showEdit" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>工序检验项</span>
+        </p>
+        <div :style="modalMaxHeight">
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" :rules="baseRules" :model="baseModel" :label-width="120">
+                        <Form-Item prop="Quality" label="检测项名称">
+                            <i-Input type="text" v-model="baseModel.Quality" placeholder="检测项名称">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="evaluation" label="评价测量技术">
+                            <i-Input type="text" v-model="baseModel.evaluation" placeholder="评价测量技术">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="检测项图片">
+                            <upload ref="upload" :show-upload-list="false" :on-success="handleSuccess" :format="['jpg','jpeg','png']" :max-size="2048" type="drag" :action=uploadUrl style="display: inline-block;width:58px;">
+                                <div style="width: 58px;height:58px;line-height: 58px;">
+                                    <icon type="camera" size="20"></icon>
+                                </div>
+                            </upload>
+                            <img v-if="baseModel.imgVisible" :src="baseModel.imgUrl" style="width: 200px;height:60px;">
+                        </Form-Item>
+                        <Form-Item label="数据类型">
+                            <i-Select v-model="baseModel.valueType" @on-change='clearVerification'>
+                                <i-Option v-for="item in ValueType" :value="item.k" :key="item.k">{{ item.v }}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+                        <div>
+                            <Form-Item label="二维表数据类型" v-if="baseModel.valueType=='5'">
+                                <i-Select v-model="baseModel.valueTypeEr" @on-change='clearVerification'>
+                                    <i-Option v-for="item in ValueTypeEr" :value="item.k" :key="item.k">{{ item.v }}</i-Option>
+                                </i-Select>
+                            </Form-Item>
+                        </div>
+                        <div>
+                            <Form-Item prop="rowNumber" label="行数" v-if="baseModel.valueType=='5'">
+                                <i-Input type="text" v-model="baseModel.rowNumber" placeholder="请输入整数">
+                                </i-Input>
+                            </Form-Item>
+                        </div>
+                        <div>
+                            <Form-Item prop="minValue" label="数值最小值" v-if="baseModel.valueType=='1' || baseModel.valueTypeEr=='1'">
+                                <i-Input type="text" v-model="baseModel.minValue" placeholder="数值最小值">
+                                </i-Input>
+                            </Form-Item>
+                        </div>
+                        <div>
+                            <Form-Item prop="maxValue" label="数值最大值" v-if="baseModel.valueType=='1' || baseModel.valueTypeEr=='1'">
+                                <i-Input type="text" v-model="baseModel.maxValue" placeholder="数值最大值">
+                                </i-Input>
+                            </Form-Item>
+                        </div>
+
+                        <div>
+                            <Form-Item prop="timeValue" label="最小日期验证" v-if="baseModel.valueType=='4'">
+                                <i-Input type="text" v-model="baseModel.timeValue" placeholder="最小日期验证公式">
+                                </i-Input>
+                            </Form-Item>
+                        </div>
+                        <div>
+                            <Form-Item prop="timeMaxValue" label="最大日期验证" v-if="baseModel.valueType=='4'">
+                                <i-Input type="text" v-model="baseModel.timeMaxValue" placeholder="最大日期验证公式">
+                                </i-Input>
+                            </Form-Item>
+                        </div>
+                        <div>
+                            <Form-Item label="布尔值" v-if="baseModel.valueType=='2'">
+                                <radio-group v-model="baseModel.booleanValue">
+                                    <radio label="0">否</radio>
+                                    <radio label="1">是</radio>
+                                </radio-group>
+                            </Form-Item>
+                        </div>
+
+
+                        <Form-Item label="计算检测项">
+                            <Checkbox v-model="baseModel.isCalcute"></Checkbox>
+                        </Form-Item>
+                        <Form-Item prop="calcuteExpress" label="计算公式" v-if="baseModel.isCalcute">
+                            <i-Input type="text" v-model="baseModel.calcuteExpress" placeholder="计算公式">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="显示条件">
+                            <Checkbox v-model="baseModel.isCondition"></Checkbox>
+                        </Form-Item>
+                        <Form-Item prop="conditionDisplay" label="显示条件公式" v-if="baseModel.isCondition">
+                            <i-Input type="text" v-model="baseModel.conditionDisplay" placeholder="计算公式">
+                            </i-Input>
+                        </Form-Item>
+                        <!-- prop="qualityType" -->
+                        <Form-Item label="检测项类型">
+                            <!-- @on-change='selectReq ' -->
+                            <i-Select v-model='baseModel.qualityType' @on-change='roleValueData'>
+                                <i-Option v-for="item in Indicator.data" :key="item.id" :value='item.id'>{{item.name}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+                        <div v-if='baseModel.qualityType==="6" '>
+                            <Form-Item prop="poNo" label="泡泡号">
+                                <i-Input v-model="baseModel.poNo " placeholder="请填入泡泡号"></i-Input>
+                            </Form-Item>
+                            <Form-Item label="位置">
+                                <Auto-Complete v-model="baseModel.location" @on-focus='comReference(Indicator.position.id) ' @on-change='completion ' placeholder="选择">
+                                    <i-Option v-for="(item,index) in Indicator.position.data" :value="item" :key="item.index">{{item}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item>
+                            <Form-Item label="尺寸类型">
+                                <Auto-Complete v-model="baseModel.size" @on-focus='comReference(Indicator.size.id) ' @on-change='completion ' placeholder="选择">
+                                    <i-Option v-for="(item,index) in Indicator.size.data" :value="item" :key="item.index">{{item}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item>
+                            <Form-Item label="格式">
+                                <Auto-Complete v-model="baseModel.format" @on-focus='comReference(Indicator.shape.id) ' @on-change='completion ' placeholder="选择">
+                                    <i-Option v-for="(item,index) in Indicator.shape.data" :value="item" :key="item.index">{{item}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item>
+                            <Form-Item label="设备">
+                                <Auto-Complete v-model="baseModel.equipment" @on-focus='comReference(Indicator.equipment.id) ' @on-change='completion ' placeholder="选择">
+                                    <i-Option v-for="(item,index) in Indicator.equipment.data" :value="item" :key="item.index">{{item}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item>
+                        </div>
+
+                        <Form-Item prop="time" label="用时">
+                            <i-Input v-model="baseModel.time" placeholder="用时"></i-Input>
+                        </Form-Item>
+                        <Form-Item label="备注">
+                            <i-Input type="textarea" size="large" v-model="baseModel.remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="roleValue" label="操作角色">
+                            <checkbox-group v-model="baseModel.roleValue">
+                                <!-- :disabled='baseModel.qualityType=="0" ' -->
+                                <checkbox label="1">操作员</checkbox>
+                                <checkbox label="2" :disabled='baseModel.qualityType !=="0" '>检验员</checkbox>
+                            </checkbox-group>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+    <!-- 复制弹窗 -->
+    <Modal v-model ='copyPop.show'>
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>复制弹窗</span>
+        </p>
+        <div >
+            <Row>
+                <i-form ref='copyPop' :model="copyPop.selectItem"  :rules="copyPopRules" :label-width="80"  >
+                        <form-item label="产品"  prop="Product">
+                            <i-Select v-model="copyPop.selectItem.Product" ref="copyPopProduct" filterable  :clearable="true" @on-change='copyGetSKU' @on-clear="deleCopyData">
+                                <i-Option v-for="item in selectItem.m_data_Product" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                            </i-Select>
+                        </form-item>
+                       <form-item label="SKU">
+                            <i-select v-model="copyPop.selectItem.SKU"  filterable ref="copySKU" :clearable="true" @on-change="copyGetProcess"  @on-clear="deleCopyDataSKU">
+                                <i-Option v-for="item in copyPop.copySKU" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                            </i-select>
+                        </form-item>
+                          <form-item label="工序">
+                            <i-select v-model="copyPop.selectItem.Process"  filterable ref="copyProcess"  :clearable="true">
+                                <i-Option v-for="item in copyPop.copyProcess" :value="item.value" :key="item.value">{{ item.label }}</i-Option>
+                            </i-select>
+                        </form-item>
+                    </i-form>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" @click="copyCancel">取消</i-Button>
+            <i-Button type="primary" size="large" @click="copySave">保存</i-Button>
+        </div>
+    </Modal>
+</div>
+<script src="/js/lib/QualityCondition.js?r=1"></script>
+<!-- <script src="/js/business/QualityCondition.js?r=21"></script> -->

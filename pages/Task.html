@@ -1,0 +1,79 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType">
+                                <i-Option value="batchNo">炉号</i-Option>
+                                <i-Option value="productName">产品</i-Option>
+                                <i-Option value="userName">检验员</i-Option>
+                                <i-Option value="taskNo">任务号</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                            </i-Input>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <!--<i-Col span="2">
+                                <Upload :format="['xls','xlsx']" :on-progress="uploading" :show-upload-list="false" :on-success="uploadDone" :on-format-error="handleFormatError"
+                                        :action="uploadUrl">
+                                    <i-Button type="ghost" icon="ios-upload">导入</i-Button>
+                                </Upload>
+                            </i-Col>
+                           <i-Col span="2">
+                                <i-Button type="info" @click="download" icon="ios-download">导出</i-Button>
+                            </i-Col>
+                           <i-Col span="2">
+                                <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                            </i-Col>-->
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="tableData.dataSource" :height="tableData.tableHeight"></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+        <Footer class="layout-footer-center"> </Footer>
+    </Layout>
+    <Modal v-model="showEdit" width="600px" :mask-closable="false">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>检测任务调度编辑</span>
+        </p>
+        <div>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" inline :rules="baseRules" :model="baseModel">
+                        <Form-Item prop="userName" label="检验员">
+                            <Auto-Complete v-model="baseModel.userName" :filter-method="filterMethod" @on-change='completeReq' placeholder="检验员" @on-select='projectGuidReq'>
+                                <i-Option v-for="item in this.baseModel.CompletionValue" :value="item.LoginAccount+'-'+ item.UserName" :key="item.id">{{item.LoginAccount}}-{{item.UserName}}</i-Option>
+                            </Auto-Complete>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+</div>
+
+<script src="/js/lib/Task.js?1"></script>

@@ -1,0 +1,252 @@
+﻿<div id="mainDiv" v-cloak>
+    <Spin size="large" fix v-if="loading"></Spin>
+    <!--<Layout>-->
+    <Layout>
+        <Content :style="{margin: '20px'}">
+            <Card>
+                <div id="Content">
+                    <Row :gutter="16">
+                        <i-Col span="4">
+                            <i-Select v-model="searchType" @on-change='clearSearchKey'>
+                                <i-Option value="formTitle">工序检验单名称</i-Option>
+                                <i-Option value="productCode">子件编号</i-Option>
+                                <i-Option value="remark">备注</i-Option>
+                                <i-Option value="formType">工序检验单类型</i-Option>
+                            </i-Select>
+                        </i-Col>
+                        <i-Col span="6">
+                            <div v-if="searchType != 'formType'">
+                                <i-Input type="text" v-model="searchKey" placeholder="请输入关键字">
+                                </i-Input>
+                            </div>
+                            <div v-else>
+                                <i-Select v-model="searchKey" clearable @on-clear='clearSearchKey'>
+                                    <i-Option v-for="item in baseModelOption" :key="item.id" :value="item.id">{{item.name}}</i-Option>
+                                </i-Select>
+                            </div>
+                        </i-Col>
+
+                        <i-Col span="2">
+                            <i-Button type="primary" @click="search" icon="ios-search">搜索</i-Button>
+                        </i-Col>
+                        <i-Col span="2">
+                            <i-Button type="success" @click="add" icon="plus">新增</i-Button>
+                        </i-Col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <!-- :height='tableHeight' -->
+                            <i-Table border stripe @on-sort-change="onSort" :columns="columnData" :data="formTableData.dataSource" :height='formTableData.tableHeight'></i-Table>
+                        </i-col>
+                    </Row>
+                    <br>
+                    <Row>
+                        <i-col span="24">
+                            <Page :total="total" @on-change="changePage" :page-size="searchModel.pageSize" :current="searchModel.pageIndex" size="small" show-total></Page>
+                        </i-col>
+                    </Row>
+                </div>
+            </Card>
+        </Content>
+    </Layout>
+
+    <!--<Footer class="layout-footer-center"> </Footer>
+    </Layout>-->
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model="showEdit.isShow" width="600px">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>工序检验单</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <Row>
+                <i-col>
+                    <i-Form ref="editForm" :rules="baseRules" :label-width="120" :model="baseModel">
+                        <Form-Item prop="formTitle" label="工序检验单名称">
+                            <i-Input type="text" v-model="baseModel.formTitle" placeholder="检验单名称">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item prop="formType" label="工序检验单类型">
+                            <i-Select v-model="baseModel.formType" style="width: 200px" :transfer='true'>
+                                <i-Option v-for='item in baseModelOption' :key="item.id" :value="item.id">{{item.name}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+                        <!-- <Form-Item prop="depositStartData" label="生效时间">
+                            <Date-Picker type="date" v-model="baseModel.depositStartData" placeholder="开始时间"></Date-Picker>
+                        </Form-Item> -->
+                        <Form-Item prop="remark" label="备注">
+                            <i-Input type="textarea" size="large" style="width:400px" v-model="baseModel.remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(showEdit)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="save">保存</i-Button>
+        </div>
+    </Modal>
+    <!--   绑定维度表单   -->
+    <!-- :mask-closable="false" :closable='false' -->
+    <Modal v-model='detection.isShow' width='1200'>
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>配置检测项</span>
+        </p>
+
+        <div :style='modalMaxHeight'>
+            <Row :gutter="16">
+                <i-col span="8">
+                    <div>
+                        <i-Form :label-width="120" :model='detection.form' ref='formValidate' :rules='dimension'>
+                            <Form-Item label="产品" prop='CompletionValue'>
+                                <Auto-Complete v-model="detection.form.CompletionValue" :filter-method="filterMethod" @on-change='completeReq' placeholder="选择产品" @on-select='skuReq'>
+                                    <i-Option v-for="item in autoComplete.CP.data" :value="item.Name +'-'+ item.ProductCode" :key="item.ProductGuid">{{item.Name}}-{{item. ProductCode}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item>
+                            <!-- prop="selectValue" -->
+                            <Form-Item label="SKU">
+                                <i-Select v-model='detection.form.selectValue' @on-change='selectReq' :clearable="true" @on-clear='selectSKUReq' :transfer='true'>
+                                    <i-Option v-for="(item,index) in autoComplete.SKU.data" :key="index" :value='item.SQUGuid'>{{item.SQUName}}</i-Option>
+                                </i-Select>
+                            </Form-Item>
+                            <!-- prop="processValue" -->
+                            <!-- prop="xxx" -->
+                            <!-- :prop="AllFormType == 0? 'processValue' : ''" -->
+                            <Form-Item :required="baseModel.formType == 0" prop='processValue' label="工序">
+                                <i-Select v-model='detection.form.processValue' @on-change='processTable' :clearable="true" @on-clear='selectProcessReq' :transfer='true'>
+                                    <i-Option v-for="(item,index) in autoComplete.GX.data" :key="index" :value='item.ProcessGuid'>{{item.ProcessName}}</i-Option>
+                                </i-Select>
+                            </Form-Item>
+                            <Form-Item label="默认检验员" prop='userValue'>
+                                <Auto-Complete v-model='detection.form.userValue' :filter-method="filterMethod" @on-change='usernameReq' placeholder="选择检验员" @on-select='userReq'>
+                                    <i-Option v-for="item in detection.form.user.data" :value="item.LoginAccount +'-'+ item.UserName" :key="item.Id " style="max-height: 300px; ">{{item.LoginAccount}}-{{item.UserName}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item>
+                            <!-- prop='RecheckUser' -->
+                            <!-- <Form-Item label="默认复检验员 ">
+                                <Auto-Complete v-model='detection.form.RecheckUser' :filter-method="filterMethod " @on-change='recheck' placeholder="选择复检验员" @on-select='rechecReq'>
+                                    <i-Option v-for="item in detection.form.RecheckUserArr.data " :value="item.LoginAccount +'-'+ item.UserName " :key="item.Id " style="max-height: 300px; ">{{item.LoginAccount}}-{{item.UserName}}</i-Option>
+                                </Auto-Complete>
+                            </Form-Item> -->
+                            <!-- prop='CMMUser' -->
+                            <div v-if="AllFormType=='0' ">
+                                <Form-Item label="默认三坐标人员">
+                                    <Auto-Complete v-model='detection.form.CMMUser' :disabled="!detection.form.isCalcute" :filter-method="filterMethod " @on-change='CMMUser' placeholder="选择三坐标人员" @on-select='CMMReq'>
+                                        <i-Option v-for="item in detection.form.CMMUserArr.data " :value="item.LoginAccount +'-'+ item.UserName " :key="item.Id " style="max-height: 300px; ">{{item.LoginAccount}}-{{item.UserName}}</i-Option>
+                                    </Auto-Complete>
+                                </Form-Item>
+                            </div>
+                            <Form-Item label="设备">
+                                <i-select v-model="detection.form.equipment.eq" ref="detectionEq" filterable ref="s_equipment" :clearable="true" :transfer=true>
+                                    <i-Option v-for="(item,index) in detection.form.equipment.data"  :value="item.value" :key="index" > {{ item.label }}</i-Option>
+                                </i-select>
+                            </Form-Item>
+                            <Form-Item prop="frequency" label="检测频率">
+                                <radio-group v-model="detection.form.frequency">
+                                    <radio label="0">全检</radio>
+                                    <radio label="1">首件检查</radio>
+                                </radio-group>
+                            </Form-Item>
+                            <div v-if="AllFormType =='0' ">
+                                <Form-Item label="发起三坐标 ">
+                                    <Checkbox v-model='detection.form.isCalcute'></Checkbox>
+                                </Form-Item>
+                                <Form-Item label="不合格品评审 ">
+                                    <Checkbox v-model='detection.form.isLifiedText'></Checkbox>
+                                </Form-Item>
+                            </div>
+                        </i-Form>
+                    </div>
+                </i-col>
+                <i-col span="16 ">
+                    <div>
+                        <i-Table ref="selection" :columns="Items.table " border @on-selection-change='ItemsSelect' :data="Items.tableData " height='400'></i-Table>
+                    </div>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(detection)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click="detectionPost">保存</i-Button>
+        </div>
+    </Modal>
+
+    <!-- 预览 弹窗 -->
+    <!-- :mask-closable="false " class=" " :closable='false' -->
+    <Modal v-model='preview.isShow' width='1000'>
+        <p slot="header" style='text-align: center'>
+            <span>{{preview.formHead}}</span>
+        </p>
+        <div>
+            <i-Table ref="dragable" :columns="preview.table" border :data="preview.tableData " height='400'></i-Table>
+        </div>
+        <div slot="footer">
+            <i-Button type="primary" size="large" :loading="loading" @click='cancel(preview)'>关闭</i-Button>
+        </div>
+    </Modal>
+    <!-- 复制弹窗 -->
+    <Modal v-model='copyModal.isShow' width='600'>
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>工序检验单复制框</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <Row>
+                <i-col>
+                    <i-Form ref="copyForm" :rules="copyRules" :label-width="120" :model="copyModal">
+                        <Form-Item prop="formTitle" label="工序检验单名称">
+                            <i-Input type="text" v-model="copyModal.formTitle" placeholder="检验单名称">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="工序检验单类型">
+                            <i-Input type="text" disabled v-model="copyModal.formTypeValue">
+                            </i-Input>
+                        </Form-Item>
+                        <Form-Item label="产品" prop='CompletionValue'>
+                            <Auto-Complete v-model="copyModal.CompletionValue" :filter-method="filterMethod" @on-change='completeReq' placeholder="选择产品" @on-select='skuReq'>
+                                <i-Option v-for="item in autoComplete.CP.data" :value="item.Name +'-'+ item.ProductCode" :key="item.ProductGuid">{{item.Name}}-{{item. ProductCode}}</i-Option>
+                            </Auto-Complete>
+                        </Form-Item>
+                        <Form-Item label="SKU">
+                            <i-Select v-model='copyModal.selectValue' @on-change='selectReq' :clearable="true" @on-clear='selectSKUReq'>
+                                <i-Option v-for="(item,index) in autoComplete.SKU.data" :key="index" :value='item.SQUGuid'>{{item.SQUName}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+
+                        <Form-Item label="工序">
+                            <i-Select v-model='copyModal.processValue' @on-change='copyProcess' :clearable="true">
+                                <i-Option v-for="(item,index) in autoComplete.GX.data" :key="index" :value='item.ProcessGuid'>{{item.ProcessName}}</i-Option>
+                            </i-Select>
+                        </Form-Item>
+                        <Form-Item prop="remark" label="备注">
+                            <i-Input type="textarea" size="large" v-model="copyModal.remark" placeholder="备注">
+                            </i-Input>
+                        </Form-Item>
+                    </i-Form>
+                </i-col>
+            </Row>
+        </div>
+        <div slot="footer">
+            <i-Button size="large" :loading="loading" @click="cancel(copyModal)">取消</i-Button>
+            <i-Button type="primary" size="large" :loading="loading" @click='copySave'>保存</i-Button>
+        </div>
+    </Modal>
+    <!-- 图片预览 -->
+    <Modal v-model='img.imgBigShow' width='800' class="">
+        <p slot="header">
+            <Icon type="information-circled"></Icon>
+            <span>图片预览</span>
+        </p>
+        <div :style='modalMaxHeight'>
+            <img :src="imgBig()" v-if='img.ImgFileId' alt="" :style="img.css">
+        </div>
+        <div slot="footer">
+            <i-Button type="primary" size="large" :loading="loading" @click='imgPreviewShows()'>关闭</i-Button>
+        </div>
+    </Modal>
+</div>
+<script src="/js/lib/Form.js?R=3"></script>
+<!-- <script src="/js/business/Form.js?R=12"></script> -->

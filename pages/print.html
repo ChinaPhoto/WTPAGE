@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>物料追踪打印</title>
+    <script src='../node_modules/babel-polyfill/dist/polyfill.min.js'></script>
+    <link rel="stylesheet" href="../node_modules/iview/dist/styles/iview.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <script src="../node_modules/vue/dist/vue.js"></script>
+    <script src="../js/iview.js"></script>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/axios/dist/axios.min.js"></script>
+    <!-- 拖放排序插件 -->
+    <script src="../node_modules/sortablejs/Sortable.min.js"></script>
+    <script src="../js/baseES5.js"></script>
+    <script src="../js/main.js"></script>
+    <style type="text/css">
+        table {
+            font-family: verdana, arial, sans-serif;
+            font-size: 11px;
+            color: #333333;
+            border-width: 1px;
+            border-color: #666666;
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+            table th {
+                border-width: 1px;
+                padding: 8px;
+                border-style: solid;
+                border-color: #666666;
+                background-color: #dedede;
+            }
+
+            table td {
+                border-width: 1px;
+                padding: 8px;
+                border-style: solid;
+                border-color: #666666;
+                background-color: #ffffff;
+            }
+    </style>
+</head>
+
+<body>
+    <div id="mainDiv">
+        <div v-for="(items,index) in tableData" ::key="index" :style="{marginTop: '20px'}">
+            <div>
+                <p>基础信息</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>成品号</th>
+                            <th>成品名称</th>
+                            <th>子件号</th>
+                            <th>子件名称</th>
+                            <th>炉号</th>
+                            <th>流水号</th>
+                            <th>入库时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{items.info.成品号}}</td>
+                            <td>{{items.info.成品名称}}</td>
+                            <td>{{items.info.子件号}}</td>
+                            <td>{{items.info.子件名称}}</td>
+                            <td>{{items.info.炉号}}</td>
+                            <td>{{items.info.流水号}}</td>
+                            <td>{{items.info.入库时间 | dateFormat}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p>生产信息</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>工序名称</th>
+                            <th>工单号</th>
+                            <th>生产设备</th>
+                            <th>操作员</th>
+                            <th>提交时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(produceItem,index) in items.produce" :key="index">
+                            <td>{{produceItem.工序名称}}</td>
+                            <td>{{produceItem.工单号}}</td>
+                            <td>{{produceItem.生产设备}}</td>
+                            <td>{{produceItem.操作员}}</td>
+                            <td>{{produceItem.提交时间 | dateFormat}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>检验信息</p>
+            </div>
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="3">工序名称</th>
+                            <th rowspan="3">关联信息</th>
+                            <th rowspan="3">工单号</th>
+                            <th rowspan="3">工序检验项</th>
+                            <th rowspan="3">评价测量技术</th>
+                            <th rowspan="3">检测频率</th>
+                            <th colspan="5">工序检验项</th>
+                        </tr>
+                        <tr>
+                            <th colspan="4">实测数据</th>
+                            <th rowspan="2">判定</th>
+                        </tr>
+                        <tr>
+                            <th>自检</th>
+                            <th>专检</th>
+                            <th>操作员</th>
+                            <th>检验员</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr v-for='(item,index) in items.test' :key="index">
+                            <td v-if='item["工序名称"]' colspan="1" :rowspan="item.rowLength">{{item['工序名称']}}</td>
+                            <td v-if='item["关联信息"]' colspan="1" :rowspan="item.rowLength">{{item.关联信息}}</td>
+                            <td v-if='item["工单号"]' colspan="1" :rowspan="item.rowLength">{{item.工单号}}</td>
+                            <td colspan="1" rowspan="1"><img width="100px" height="100px" :src='fileServerUrl+"/GetFileStramById?fileID="+item.工序检验项' v-if="item.hasPic == 1" /> <span v-if="item.hasPic != 1"> {{item.工序检验项}}</span></td>
+                            <td colspan="1" rowspan="1"> {{item.评价测量技术}}</td>
+                            <td colspan="1" rowspan="1"> {{item.检测频率}}</td>
+                            <td colspan="1" rowspan="1"> <img width="100px" height="100px" :src='fileServerUrl+"/GetFileStramById?fileID="+item.自检' v-if="item.值类型 == 3" /> <span v-if="item.值类型 != 3">   {{item.自检}}</span></td>
+                            <td colspan="1" rowspan="1"> <img width="100px" height="100px" :src='fileServerUrl+"/GetFileStramById?fileID="+item.专检' v-if="item.值类型 == 3" /> <span v-if="item.值类型 != 3"> {{item.专检}}</span></td>
+                            <td colspan="1" rowspan="1"> {{item.操作员}}</td>
+                            <td colspan="1" rowspan="1"> {{item.检验员}}</td>
+                            <td v-if='item["判定"]' colspan="1" :rowspan="item.rowRudgmentLength">{{item.判定}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="page-break-after: always;"></div>
+        </div>
+    </div>
+    <script src="/js/business/Print.js?R=1"></script>
+</body>
+
+
+</html>

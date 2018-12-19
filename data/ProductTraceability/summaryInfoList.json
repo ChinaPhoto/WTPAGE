@@ -1,0 +1,38 @@
+[
+    {
+        "productNo": "103W4744P001",
+        "productName": "制动盘",
+        "subPartsNo": "200W1175",
+        "subPartsName": "挡圈",
+        "batchNo": "2001",
+        "batchId": "123456",
+        "warehousing": "2018-07-17 01:01:08"
+    },
+    {
+        "productNo": "103W4744P002",
+        "productName": "制动盘",
+        "subPartsNo": "200W1175",
+        "subPartsName": "挡圈",
+        "batchNo": "2002",
+        "batchId": "123456",
+        "warehousing": "2018-07-17 01:01:08"
+    },
+    {
+        "productNo": "103W4744P003",
+        "productName": "制动盘",
+        "subPartsNo": "200W1175",
+        "subPartsName": "挡圈",
+        "batchNo": "2003",
+        "batchId": "123456",
+        "warehousing": "2018-07-17 01:01:08"
+    },
+    {
+        "productNo": "103W4744P004",
+        "productName": "制动盘",
+        "subPartsNo": "200W1175",
+        "subPartsName": "挡圈",
+        "batchNo": "2004",
+        "batchId": "123456",
+        "warehousing": "2018-07-17 01:01:08"
+    }
+]
